@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1020">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/static/style.css">
+  <title>NEON STEP · 웹 리듬게임</title>
+</head>
+<body>
+  <main>
+    <header class="brand">
+      <div><p class="eyebrow">PYTHON POWERED / 4-KEY RHYTHM</p><h1>NEON <span>STEP</span></h1></div>
+      <span class="badge">오리지널 데모 · PC 키보드</span>
+    </header>
+    <div id="notice" class="notice" role="alert" hidden></div>
+    <div class="layout">
+      <section class="panel stage">
+        <div class="stage-heading"><div><p class="eyebrow">NOW PLAYING</p><h2 id="song-title">곡을 불러오는 중...</h2></div><span id="state-label" class="badge" role="status">준비 중</span></div>
+        <div class="hud">
+          <div><span>점수</span><strong id="score">0</strong></div>
+          <div><span>콤보 / 최대</span><strong><span id="combo">0</span> / <span id="max-combo">0</span></strong></div>
+          <div><span>정확도</span><strong id="accuracy">0.00%</strong></div>
+        </div>
+        <div id="play-area" data-phase="idle">
+          <canvas id="game-canvas" aria-label="4레인 게임 화면. 왼쪽부터 D, F, J, K 키를 사용하세요."></canvas>
+          <div id="overlay"><strong id="overlay-title">준비됐나요?</strong><span id="overlay-detail">곡을 선택하고 시작 버튼을 누르세요.</span></div>
+        </div>
+        <div class="timeline"><progress id="progress" max="50000" value="0" aria-label="곡 진행 시간"></progress><output id="clock" data-time-ms="0">0:00.00 / 0:50</output></div>
+        <div class="judgements"><span class="perfect">Perfect <b id="perfect">0</b></span><span class="good">Good <b id="good">0</b></span><span class="miss">Miss <b id="miss">0</b></span><strong id="judgement" aria-label="최근 판정">—</strong></div>
+        <div class="controls">
+          <button id="start" class="primary" disabled>게임 시작</button>
+          <button id="pause" disabled>일시정지</button>
+          <button id="restart" disabled>다시 시작</button>
+          <button id="back" disabled>곡 선택</button>
+        </div>
+        <p class="hint"><kbd>D</kbd><kbd>F</kbd><kbd>J</kbd><kbd>K</kbd> 판정선에 맞춰 입력 · <kbd>Esc</kbd> 일시정지 / 재개</p>
+      </section>
+      <aside>
+        <section class="panel">
+          <p class="eyebrow">SELECT TRACK</p><h2>곡 선택</h2>
+          <label for="song-select">플레이할 곡</label>
+          <select id="song-select" disabled><option>불러오는 중...</option></select>
+          <p id="song-info" class="hint">50초 데모 / 120 BPM</p>
+          <button id="reload" class="small">곡 목록 다시 불러오기</button>
+        </section>
+        <section class="panel settings">
+          <p class="eyebrow">MAKE IT YOURS</p><h2>플레이 설정</h2>
+          <label for="volume">볼륨 <output id="volume-value">60%</output></label>
+          <input id="volume" type="range" min="0" max="100" step="1" value="60">
+          <label for="speed">노트 속도 <output id="speed-value">420 px/s</output></label>
+          <input id="speed" type="range" min="250" max="850" step="10" value="420">
+          <label for="offset">타이밍 오프셋 (ms)</label>
+          <input id="offset" type="number" min="-250" max="250" step="1" value="0">
+          <p class="hint">양수: 노트 도착과 판정 시각을 더 늦게.<br>음수: 더 일찍. 범위 ±250ms.<br>속도와 오프셋은 곡 선택 화면에서 변경합니다.</p>
+        </section>
+        <section class="panel">
+          <p class="eyebrow">PERSONAL BEST</p><h2>플레이 기록</h2>
+          <strong id="best" class="best">아직 기록이 없습니다.</strong>
+          <ol id="recent" class="recent"></ol>
+          <button id="records-retry" class="small" disabled>기록 새로고침</button>
+          <p class="hint">인증 없는 로컬·데모 기록입니다.<br>공식 랭킹 또는 부정행위 검증 점수가 아닙니다.</p>
+        </section>
+      </aside>
+    </div>
+    <section id="result" class="panel result" hidden aria-labelledby="result-title">
+      <p class="eyebrow">TRACK COMPLETE</p><h2 id="result-title">플레이 결과</h2>
+      <div class="result-grid">
+        <div><span>점수</span><strong id="result-score"></strong></div>
+        <div><span>최대 콤보</span><strong id="result-combo"></strong></div>
+        <div><span>정확도</span><strong id="result-accuracy"></strong></div>
+        <div><span>Perfect / Good / Miss</span><strong id="result-counts"></strong></div>
+      </div>
+      <p id="save-status" role="status"></p>
+      <button id="retry-save" hidden>결과 저장 재시도</button>
+    </section>
+    <footer>음악과 화면은 오디오 시계를 함께 사용합니다. 헤드폰과 PC 키보드를 권장합니다.</footer>
+  </main>
+  <script type="module" src="/static/app.mjs"></script>
+</body>
+</html>
