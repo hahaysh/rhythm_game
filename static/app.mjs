@@ -1,11 +1,11 @@
 import { DEFAULT_SETTINGS, GameEngine, KEYS, validateChart, validateSettings } from "./engine.mjs";
 import { AudioClock } from "./audio.mjs";
+import { drawStage, HIT_DURATION_MS } from "./renderer.mjs";
 
 const $ = (id) => document.getElementById(id);
 const canvas = $("game-canvas");
 const context = canvas.getContext("2d");
-const colors = ["#79b9ff", "#bc9bff", "#72f0d0", "#ffbe7a"];
-const labels = ["D", "F", "J", "K"];
+const motionPreference = matchMedia("(prefers-reduced-motion: reduce)");
 let chart = null;
 let engine = null;
 let clock = null;
@@ -71,6 +71,7 @@ function active() {
 
 function updateControls() {
   $("start").disabled = busy || !chart || active();
+  $("overlay-start").disabled = $("start").disabled;
   $("pause").disabled = busy || !active();
   $("pause").textContent = engine?.phase === "paused" ? "재개" : "일시정지";
   $("restart").disabled = busy || !chart || engine?.phase === "idle";
@@ -125,9 +126,14 @@ async function refreshRecords() {
   $("best").textContent = records.best
     ? `${records.best.score.toLocaleString()}점 · ${records.best.accuracy.toFixed(2)}%`
     : "아직 기록이 없습니다.";
+  $("best-hint").hidden = records.best !== null;
   $("recent").replaceChildren(...records.recent.map((record) => {
     const item = document.createElement("li");
-    item.textContent = `${record.score.toLocaleString()}점 / 콤보 ${record.max_combo} / ${new Date(record.played_at).toLocaleString("ko-KR")}`;
+    const score = document.createElement("strong");
+    score.textContent = `${record.score.toLocaleString()}점`;
+    const detail = document.createElement("span");
+    detail.textContent = `콤보 ${record.max_combo} · ${new Date(record.played_at).toLocaleString("ko-KR")}`;
+    item.append(score, detail);
     return item;
   }));
 }
@@ -145,7 +151,9 @@ async function selectSong() {
   chart = validateChart(await api(`/api/songs/${encodeURIComponent(selected)}/chart`));
   engine = new GameEngine(chart, settings.offset);
   $("song-title").textContent = chart.title;
-  $("song-info").textContent = `${chart.bpm} BPM · ${chart.duration_ms / 1000}초 · ${chart.notes.length}개 노트`;
+  $("track-bpm").textContent = chart.bpm;
+  $("track-duration").textContent = chart.duration_ms / 1000;
+  $("track-notes").textContent = chart.notes.length;
   $("progress").max = chart.duration_ms;
   render();
   await refreshRecords();
@@ -316,35 +324,14 @@ function render() {
   if (!context) throw new Error("이 브라우저에서 Canvas를 사용할 수 없습니다.");
   const width = canvasWidth;
   const height = canvasHeight;
-  const laneWidth = width / 4;
-  const line = height - 68;
-  context.clearRect(0, 0, width, height);
-  for (let lane = 0; lane < 4; lane += 1) {
-    const left = lane * laneWidth;
-    context.fillStyle = engine?.pressed.has(lane) ? `${colors[lane]}30` : "#111a2c";
-    context.fillRect(left + 2, 0, laneWidth - 4, height);
-    context.fillStyle = colors[lane];
-    context.fillRect(left + 8, line, laneWidth - 16, 3);
-    context.font = "bold 22px Segoe UI";
-    context.textAlign = "center";
-    context.fillText(labels[lane], left + laneWidth / 2, height - 24);
-  }
+  drawStage(context, width, height, engine, settings.speed, motionPreference.matches);
   if (!engine) return;
-  for (const note of engine.notes) {
-    if (note.judgement !== null) continue;
-    const y = line - (note.time_ms - engine.effectiveMs) * settings.speed / 1000;
-    if (y < -18) break;
-    if (y > height) continue;
-    context.fillStyle = colors[note.lane];
-    context.fillRect(note.lane * laneWidth + 10, y - 8, laneWidth - 20, 16);
-    context.fillStyle = "#ffffff66";
-    context.fillRect(note.lane * laneWidth + 10, y - 8, laneWidth - 20, 3);
-  }
   const summary = engine.summary();
   $("score").textContent = summary.score.toLocaleString();
   $("combo").textContent = engine.combo;
   $("max-combo").textContent = summary.max_combo;
   $("accuracy").textContent = `${summary.accuracy.toFixed(2)}%`;
+  $("accuracy-fill").style.width = `${summary.accuracy}%`;
   for (const kind of ["perfect", "good", "miss"]) $(kind).textContent = summary[kind];
   $("progress").value = Math.max(0, Math.min(chart.duration_ms, engine.audioMs));
   $("clock").dataset.timeMs = engine.audioMs.toFixed(2);
@@ -353,22 +340,41 @@ function render() {
   const recent = engine.lastJudgement && engine.audioMs - engine.lastJudgement.audioMs < 650;
   $("judgement").textContent = recent ? engine.lastJudgement.kind.toUpperCase() : "—";
   $("judgement").className = recent ? engine.lastJudgement.kind : "";
+  const hitAge = engine.lastJudgement ? engine.audioMs - engine.lastJudgement.audioMs : HIT_DURATION_MS;
+  $("hit-feedback").hidden = engine.phase !== "running" || engine.audioMs < 0 || hitAge >= HIT_DURATION_MS;
+  if (!$("hit-feedback").hidden) {
+    const kind = engine.lastJudgement.kind;
+    $("hit-feedback").dataset.kind = kind;
+    $("hit-kind").textContent = kind.toUpperCase();
+    $("hit-combo").textContent = kind === "miss" ? "KEEP YOUR FLOW" : `${engine.combo} COMBO`;
+    $("hit-feedback").style.setProperty("--hit-opacity", Math.min(1, (1 - hitAge / HIT_DURATION_MS) * 2));
+    $("hit-feedback").style.setProperty("--hit-rise", `${-hitAge / HIT_DURATION_MS * 12}px`);
+  }
   const countdown = engine.phase === "running" && engine.audioMs < 0;
   $("overlay").hidden = engine.phase === "running" && !countdown;
+  $("overlay").dataset.mode = countdown ? "countdown" : engine.phase;
+  $("overlay-start").hidden = engine.phase !== "idle";
   if (countdown) {
     $("overlay-title").textContent = Math.ceil(-engine.audioMs / 1000);
+    const fraction = (((engine.audioMs % 1000) + 1000) % 1000) / 1000;
+    $("overlay").style.setProperty("--count-progress", fraction);
+    $("overlay").style.setProperty("--count-scale", 1 + (1 - fraction) * .12);
+    $("overlay-kicker").textContent = "READY TO FLOW";
     $("overlay-detail").textContent = "D · F · J · K — 준비하세요!";
     $("state-label").textContent = "카운트다운";
   } else if (engine.phase === "paused") {
+    $("overlay-kicker").textContent = "TAKE A BREATH";
     $("overlay-title").textContent = "일시정지";
     $("state-label").textContent = "일시정지";
   } else if (engine.phase === "finished") {
-    $("overlay-title").textContent = "TRACK COMPLETE";
+    $("overlay-kicker").textContent = "SESSION COMPLETE";
+    $("overlay-title").textContent = "멋진 흐름이었어요.";
     $("overlay-detail").textContent = "아래에서 결과를 확인하고 다시 도전하세요.";
     $("state-label").textContent = "완료";
   } else if (engine.phase === "idle") {
-    $("overlay-title").textContent = "준비됐나요?";
-    $("overlay-detail").textContent = "시작 버튼을 누르고 판정선에 맞춰 입력하세요.";
+    $("overlay-kicker").textContent = "FIND YOUR FLOW";
+    $("overlay-title").textContent = "리듬 속으로.";
+    $("overlay-detail").textContent = "빛이 판정선에 닿는 순간, 당신의 리듬을 들려주세요.";
     $("state-label").textContent = "곡 선택";
   } else {
     $("state-label").textContent = "플레이 중";
@@ -393,6 +399,7 @@ function frame() {
 }
 
 $("start").addEventListener("click", () => void action(startGame));
+$("overlay-start").addEventListener("click", () => void action(startGame));
 $("restart").addEventListener("click", () => void action(startGame));
 $("pause").addEventListener("click", () => void action(togglePause));
 $("back").addEventListener("click", () => void action(backToSelection));

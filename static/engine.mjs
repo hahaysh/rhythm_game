@@ -74,7 +74,7 @@ export class GameEngine {
   }
 
   reset() {
-    this.notes = this.chart.notes.map((note) => ({ ...note, judgement: null }));
+    this.notes = this.chart.notes.map((note) => ({ ...note, judgement: null, judgedAtMs: null }));
     this.phase = "idle";
     this.pressed = new Set();
     this.perfect = 0;
@@ -105,6 +105,7 @@ export class GameEngine {
   judge(note, judgement) {
     if (note.judgement !== null) throw new Error("이미 판정한 노트입니다.");
     note.judgement = judgement;
+    note.judgedAtMs = this.audioMs;
     this[judgement] += 1;
     this.combo = judgement === "miss" ? 0 : this.combo + 1;
     this.maxCombo = Math.max(this.maxCombo, this.combo);

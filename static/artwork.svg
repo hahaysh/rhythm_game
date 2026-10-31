@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="sky" x2=".8" y2="1">
+      <stop stop-color="#0b1129"/>
+      <stop offset=".5" stop-color="#241446"/>
+      <stop offset="1" stop-color="#10112e"/>
+    </linearGradient>
+    <radialGradient id="aura">
+      <stop stop-color="#33e8ef" stop-opacity=".58"/>
+      <stop offset=".45" stop-color="#7b49ed" stop-opacity=".3"/>
+      <stop offset="1" stop-color="#612adc" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="portal" x2="1" y2="1">
+      <stop stop-color="#78fcf1"/>
+      <stop offset=".35" stop-color="#51c2ff"/>
+      <stop offset=".7" stop-color="#b67aff"/>
+      <stop offset="1" stop-color="#ff77bd"/>
+    </linearGradient>
+    <linearGradient id="floor" x2="0" y2="1">
+      <stop stop-color="#29204c"/>
+      <stop offset="1" stop-color="#070d20"/>
+    </linearGradient>
+    <linearGradient id="beam" x2="0" y2="1">
+      <stop stop-color="#78fcf1" stop-opacity="0"/>
+      <stop offset="1" stop-color="#78fcf1" stop-opacity=".8"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h800v600H0z"/>
+  <ellipse cx="408" cy="253" rx="350" ry="270" fill="url(#aura)"/>
+  <g fill="#c1dafa">
+    <circle cx="96" cy="93" r="1.5"/><circle cx="211" cy="147" r="1"/>
+    <circle cx="317" cy="64" r="1.4"/><circle cx="545" cy="91" r="1"/>
+    <circle cx="658" cy="145" r="1.6"/><circle cx="706" cy="53" r="1"/>
+    <circle cx="122" cy="254" r="1"/><circle cx="590" cy="234" r="1"/>
+    <circle cx="73" cy="191" r="1"/><circle cx="489" cy="42" r="1"/>
+    <circle cx="737" cy="247" r="1.5"/><circle cx="242" cy="34" r="1"/>
+  </g>
+  <g stroke="#7288bd" stroke-opacity=".24" fill="none">
+    <path d="M112 129h30m-15-15v30M652 74h20m-10-10v20M592 174h14m-7-7v14"/>
+    <circle cx="408" cy="258" r="205"/>
+    <circle cx="408" cy="258" r="214" stroke-dasharray="2 20"/>
+  </g>
+  <path d="M0 380l87-76 63 47 85-106 98 135 67-50 77 47 78-119 92 94 64-37 89 66v219H0z" fill="#15132e"/>
+  <path d="M0 413l121-79 64 62 56-71 105 101 89-51 121-49 114 81 130-55v248H0z" fill="#0c1026"/>
+  <path d="M0 440h800v160H0z" fill="url(#floor)"/>
+  <g stroke="#6567b5" stroke-opacity=".32">
+    <path d="M408 440L-90 600M408 440L104 600M408 440L270 600M408 440L408 600M408 440L546 600M408 440L712 600M408 440L898 600"/>
+    <path d="M0 456h800M0 479h800M0 513h800M0 556h800M0 598h800"/>
+  </g>
+  <ellipse cx="408" cy="446" rx="176" ry="16" fill="#6ddffc" opacity=".12" filter="url(#glow)"/>
+  <g transform="translate(408 258) rotate(-18)">
+    <ellipse rx="143" ry="180" fill="#081326" stroke="url(#portal)" stroke-width="15" filter="url(#glow)"/>
+    <ellipse rx="143" ry="180" fill="#09182d" fill-opacity=".7" stroke="url(#portal)" stroke-width="5"/>
+    <ellipse rx="129" ry="166" fill="none" stroke="#c5fdff" stroke-opacity=".45" stroke-width="1.5"/>
+    <path d="M-141 8c-50-34-90-2-64 43s251 97 357 4c35-31 21-56-16-56" fill="none" stroke="url(#portal)" stroke-width="3"/>
+  </g>
+  <g fill="url(#beam)">
+    <path d="M367 161h15v189h-15z" opacity=".3"/>
+    <path d="M397 137h17v212h-17z" opacity=".48"/>
+    <path d="M430 182h15v157h-15z" opacity=".3"/>
+  </g>
+  <g fill="url(#portal)" stroke="#d8ffff" stroke-opacity=".8">
+    <path d="M359 345h30l5 7-5 7h-30l-5-7z"/>
+    <path d="M391 304h33l5 7-5 7h-33l-5-7z"/>
+    <path d="M424 331h30l5 7-5 7h-30l-5-7z"/>
+  </g>
+  <path d="M260 443h296" stroke="url(#portal)" stroke-width="2"/>
+  <g stroke="#78e9ff" stroke-width="2" opacity=".6">
+    <path d="M65 390l-18 13m679-61 18-15M611 480l24 13"/>
+  </g>
+  <rect x="26" y="26" width="748" height="548" rx="3" fill="none" stroke="#b6acfa" stroke-opacity=".14"/>
+  <path d="M42 65V42h23m670 0h23v23M42 535v23h23m670 0h23v-23" fill="none" stroke="#adc8fa" stroke-opacity=".5"/>
+</svg>
